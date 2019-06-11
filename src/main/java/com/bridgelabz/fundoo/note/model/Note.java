@@ -2,11 +2,16 @@ package com.bridgelabz.fundoo.note.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
 
@@ -19,12 +24,36 @@ public class Note implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long noteId;
 	private long userId;
+	@NotNull
+	@NotEmpty(message = "title should not be empty")
 	private String title;
+	@NotNull
+	@NotEmpty(message = "description should not be empty")
 	private String description;
 	private String colour;
 	private LocalDateTime created;
 	private LocalDateTime modified;
+	private boolean isPin;
+	private boolean isArchieve;
+	public boolean isArchieve() {
+		return isArchieve;
+	}
+
+	public void setArchieve(boolean isArchieve) {
+		this.isArchieve = isArchieve;
+	}
+
+	public boolean isPin() {
+		return isPin;
+	}
+
+	public void setPin(boolean isPin) {
+		this.isPin = isPin;
+	}
+
 	private boolean isTrash;
+	
+	
 
 	public boolean isTrash() {
 		return isTrash;
@@ -95,5 +124,15 @@ public class Note implements Serializable {
 		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
 				+ ", colour=" + colour + ", created=" + created + ", modified=" + modified + "]";
 	}
+	@ManyToMany(cascade = CascadeType.ALL)
+	private List<Label> listLabel;
+	public List<Label> getListLabel() {
+		return listLabel;
+	}
+
+	public void setListLabel(List<Label> listLabel) {
+		this.listLabel = listLabel;
+	}
+	
 
 }

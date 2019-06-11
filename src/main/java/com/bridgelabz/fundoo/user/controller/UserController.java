@@ -25,6 +25,7 @@ import com.bridgelabz.fundoo.user.dto.UserDTO;
 import com.bridgelabz.fundoo.user.service.UserService;
 
 @RequestMapping("/user")
+@CrossOrigin(allowedHeaders = "*", origins = "*")
 @RestController
 public class UserController {
 	@Autowired
@@ -35,7 +36,7 @@ public class UserController {
 			throws UserException, UnsupportedEncodingException {
 
 		Response response = userService.onRegister(userDto);
-		System.out.println(response);
+		System.out .println(response);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}

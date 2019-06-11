@@ -1,10 +1,13 @@
 package com.bridgelabz.fundoo.note.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
+import com.bridgelabz.fundoo.note.model.Note;
 import com.bridgelabz.fundoo.note.service.NoteService;
 import com.bridgelabz.fundoo.response.Response;
 
@@ -60,5 +64,45 @@ public class NoteController {
 		return new ResponseEntity<Response>(responsestatus, HttpStatus.OK);
 
 	}
+	
+	@PutMapping("/pinned")
+	public ResponseEntity<Response> pinnedOrNot(@RequestHeader String token ,@RequestParam long noteId)
+	{
+		Response responseStatus = noteService.checkPinOrNot(token, noteId);
+		return new ResponseEntity<Response>(responseStatus,HttpStatus.OK);	
+	}
+	
+	@PutMapping("/archieved")
+	public ResponseEntity<Response> archievedOrNot(@RequestHeader String token, @RequestParam long noteId)
+	{
+		Response responseStatus = noteService.checkArchieveOrNot(token, noteId);
+		return new ResponseEntity<Response>(responseStatus,HttpStatus.OK);	
+	}
+	
+	@PutMapping("/color")
+	public ResponseEntity<Response> colorSet(@RequestHeader String token, @RequestParam long noteId, @RequestParam String color)
+	{
+		Response responseStatus = noteService.setColour(token, noteId, color);
+		return new ResponseEntity<Response>(responseStatus,HttpStatus.OK);
+		
+	}
+	
+	@GetMapping("/getTrash")
+	public List<Note> getTrashNotes(@RequestHeader String token) {
+		List<Note> listnotes = noteService.restoreTrashNotes(token);
+		return listnotes;
+	}
+	
 
+	@GetMapping("/getPin")
+	public List<Note> getPinnedNotes(@RequestHeader String token) {
+		List<Note> listnotes = noteService.getPinnedNote(token);
+		return listnotes;
+	}
+	
+	@GetMapping("/getArchieve")
+	public List<Note> getArchieveNotes(@RequestHeader String token) {
+		List<Note> listnotes = noteService.getArchievedNote(token);
+		return listnotes;
+	}
 }

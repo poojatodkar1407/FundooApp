@@ -1,7 +1,9 @@
 package com.bridgelabz.fundoo.note.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,5 +132,163 @@ public class NotesServiceImpl implements NoteService {
 			Response response = ResponseHelper.statusResponse(100, environment.getProperty("status.note.noteDeleted"));
 			return response;
 		}
+	}
+
+	@Override
+	public Response checkPinOrNot(String token, long noteId) {
+
+		long userId = userToken.decodeToken(token);
+		System.out.println(userId);
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+		System.out.println("note is" + note);
+
+		if (note == null) {
+			throw new UserException(100, "note is not exist");
+		}
+
+		if (note.isPin() == false) {
+			note.setPin(true);
+			noteRepository.save(note);
+
+			Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.note.pinned"));
+			return response;
+		} else {
+			note.setPin(false);
+			noteRepository.save(note);
+			Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.note.unpinned"));
+			return response;
+		}
+	}
+
+	@Override
+	public Response checkArchieveOrNot(String token, long noteId) {
+
+		long userId = userToken.decodeToken(token);
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+
+		if (note == null) {
+			throw new UserException(100, "note is not exist");
+		}
+
+		if (note.isArchieve() == false) {
+			note.setArchieve(true);
+			noteRepository.save(note);
+
+			Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.note.archieved"));
+			return response;
+		} else {
+			note.setArchieve(false);
+			noteRepository.save(note);
+
+			Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.note.unarchieved"));
+			return response;
+		}
+
+	}
+
+	@Override
+	public Response setColour(String token, long noteId, String color) {
+
+		long userId = userToken.decodeToken(token);
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+		if (note == null) {
+			throw new UserException(100, "invalid note or not exist");
+		}
+
+		note.setColour(color);
+		noteRepository.save(note);
+
+		Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.note.color"));
+		return response;
+	}
+
+	/*
+	 * public List<Note> restoreTrashNotes(String token)
+	 * {
+	  		long userId = userToken.decodeToken(token);
+	  		List<Note> trashNote = noteRepository.findByUserId(userId);
+	  		List<Note> listTrashNote = new ArrayList<>();
+	  		
+	  		for(Note userNotes : trashNote)
+	  		{
+	  			Note noteDto = modelmapper.map(userNotes,Note.class);
+	  			if(userNotes.isTrash() == true)
+	  			{
+	  				listTrashNote.add(noteDto);
+	  			}
+	  			
+	  		}
+	 * }
+	 */
+	@Override
+	public List<Note> restoreTrashNotes(String token) {
+
+		long userId = userToken.decodeToken(token);
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new UserException("Sorry ! Note are not available"));
+		List<Note> userNote = user.getNotes().stream().filter(data -> (data.isTrash() == true))
+				.collect(Collectors.toList());
+		
+		return userNote;
+
+	}
+
+	/*
+
+	 public List<Note> getPinnedNote(String token)
+	 {
+	 long userId = userToken.decode(token);
+	 User user = userRepository.fingById(userId).orElseThrow(()->new UserException("not available"));
+
+	 List<Note> pinNote = noteRepository.findByUserId(userId);
+	 List<Note> listPinNote = new ArrayList<>();
+	 
+	 for (Note userNotes : pinNote) {
+			Note notesDto = modelMapper.map(userNotes, Note.class);
+			if (userNotes.isArchive() == true) {
+				listNotes.add(notesDto);
+
+			}
+	 
+	 */
+	@Override
+	public List<Note> getPinnedNote(String token) {
+		long userId = userToken.decodeToken(token);
+
+		User user = userRepository.findById(userId).orElseThrow(() -> new UserException("No note is available"));
+		List<Note> pinNote = user.getNotes().stream().filter(data -> (data.isPin() == true))
+				.collect(Collectors.toList());
+		user.getNotes().stream().filter(data1 -> (data1.isPin() == true)).collect(Collectors.toList()).forEach(System.out::println);
+		
+		return pinNote;
+
+	}
+	/*
+	 * 
+	 * 	public List<Note> getArchivedNotes(String token) {
+		long id = userToken.decodeToken(token);
+		List<Note> notes = (List<Note>) notesRepository.findByUserId(id);
+		List<Note> listNotes = new ArrayList<>();
+		for (Note userNotes : notes) {
+			Note notesDto = modelMapper.map(userNotes, Note.class);
+			if (userNotes.isArchive() == true) {
+				listNotes.add(notesDto);
+
+			}
+		}
+		return listNotes;
+	}
+	 */
+	@Override
+	public List<Note> getArchievedNote(String token) {
+		long userId = userToken.decodeToken(token);
+
+		User user = userRepository.findById(userId).orElseThrow(() -> new UserException("No note is available"));
+		List<Note> archieveNote = user.getNotes().stream().filter(data -> (data.isArchieve() == true))
+				.collect(Collectors.toList());
+
+		user.getNotes().stream().filter(data1 -> (data1.isArchieve() == true)).collect(Collectors.toList()).forEach(System.out::println);
+		return archieveNote;
+
 	}
 }

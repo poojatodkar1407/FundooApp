@@ -11,9 +11,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
 
+import com.bridgelabz.fundoo.note.model.Label;
 import com.bridgelabz.fundoo.note.model.Note;
 
 @Entity
@@ -25,10 +28,20 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "userId")
 	private Long userId;
+	@NotNull
+	@NotEmpty(message = "firstname should not be empty")
 	private String firstName;
+	@NotNull
+	@NotEmpty(message = "lastname should not be empty")
 	private String lastName;
+	@NotNull
+	@NotEmpty(message = "email id should not be empty")
 	private String emailId;
+	@NotNull
+	@NotEmpty(message = "password should not be empty")
 	private String password;
+	@NotNull
+	@NotEmpty(message = "mobile number should not be empty")
 	private String mobileNum;
 	private boolean isVerify;
 	private LocalDateTime registerDate = LocalDateTime.now();
@@ -114,5 +127,17 @@ public class User {
 	public void setNotes(List<Note> notes) {
 		this.notes = notes;
 	}
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<Label> label;
+
+	public List<Label> getLabel() {
+		return label;
+	}
+
+	public void setLabel(List<Label> label) {
+		this.label = label;
+	}
+	
 
 }
