@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
 import com.bridgelabz.fundoo.note.model.Note;
 import com.bridgelabz.fundoo.note.service.NoteService;
@@ -104,5 +105,43 @@ public class NoteController {
 	public List<Note> getArchieveNotes(@RequestHeader String token) {
 		List<Note> listnotes = noteService.getArchievedNote(token);
 		return listnotes;
+	}
+	
+	@GetMapping("/findNote")
+	public Note getNote(@RequestHeader String title, @RequestHeader String description)
+	{
+		Note note = noteService.findNoteFromUser(title, description);	
+		return note;
+		
+	}
+	
+	@PutMapping("/setRemainder")
+	public ResponseEntity<Response> setRemainderToNote(@RequestHeader String token ,@RequestParam long noteId,@RequestParam String time)
+	{
+		Response response = noteService.setReminder(token, noteId, time);
+		
+		return new ResponseEntity<Response>(response,HttpStatus.OK);
+		
+	}
+	
+	@PutMapping("/deleteReminder")
+	public ResponseEntity<Response> deleteRemainderToNote(@RequestHeader String token, @RequestParam long noteId)
+	{
+		Response response = noteService.deleteReminder(token, noteId);
+		return new ResponseEntity<Response>(response,HttpStatus.OK);
+	}
+	
+	@PutMapping("/addCollaborator")
+	public ResponseEntity<Response> addCollaborator(@RequestHeader String token, @RequestParam long noteId , @RequestBody CollaboratorDTO collaboratordto)
+	{
+		Response response = noteService.addCollaboratorToNote(token, noteId, collaboratordto);
+		return new ResponseEntity<Response>(response,HttpStatus.OK);		
+	}
+	
+	@PutMapping("/deleteCollaborator")
+	public ResponseEntity<Response> deleteCollaborator(@RequestHeader String token , @RequestParam long noteId,@RequestParam String emailId)
+	{
+		Response response = noteService.deleteCollaboratorToNote(token, noteId, emailId);
+		return new ResponseEntity<Response>(response,HttpStatus.OK);
 	}
 }

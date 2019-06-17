@@ -1,14 +1,23 @@
 package com.bridgelabz.fundoo.user.service;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.exception.UserException;
 import com.bridgelabz.fundoo.response.Response;
@@ -24,6 +33,8 @@ import com.bridgelabz.fundoo.utility.Utility;
 @PropertySource("classpath:message.properties")
 @Service("userService")
 public class UserServiceImpl implements UserService {
+
+	private static String UPLOAD_FOLDER = "/home/admin1/Pictures/Wallpapers/";
 
 	@Autowired
 	private UserRepository userRepo;
@@ -43,6 +54,8 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private Environment environment;
 
+	private final java.nio.file.Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
+	
 	@Override
 	public Response onRegister(UserDTO userDto) {
 
@@ -138,5 +151,80 @@ public class UserServiceImpl implements UserService {
 		return ResponseHelper.statusResponse(200, "password successfully reset");
 
 	}
+
+	@Override
+	public Response uploadImage(String token, MultipartFile imageFile) throws IOException {
+		long userId = tokenUtil.decodeToken(token);
+		
+		Optional<User> user = userRepo.findById(userId);
+		
+		if(!user.isPresent())
+		{
+			throw new UserException(-5, "user is not present");
+		}
+		
+		UUID uuid = UUID.randomUUID();
+		
+		String uniqueId = uuid.toString();
+		try {
+			Files.copy(imageFile.getInputStream(), fileLocation.resolve(uniqueId), StandardCopyOption.REPLACE_EXISTING);
+			user.get().setProfilePic(uniqueId);
+			userRepo.save(user.get());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return ResponseHelper.statusResponse(200, "profile picture is uploaded");
+	}
+	
+	/*
+	 * @Override
+	public Response setProfile(String imageFile,String token) throws IllegalArgumentException, IOException 
+	{
+	    long userId=tokenUtil.decodeToken(token);
+	    User user=userRepo.findById(userId).get();
+	    
+	    user.setProfilePic(imageFile);
+	    userRepo.save(user);
+	       
+	    Response response=ResponseStatus.statusInformation(environment.getProperty("status.setProfile.success"),
+	    		Integer.parseInt(environment.getProperty("status.success.code")));
+		return response;
+	}
+	 */
+		
+	public Resource getUploadedImageOfUser(String token)
+	{
+		long userId = tokenUtil.decodeToken(token);
+		
+		Optional<User> user = userRepo.findById(userId);
+		if(!user.isPresent()) {
+			throw new UserException(-5,"user already exist");
+		}
+		
+		try
+		{
+			Path imageFile = fileLocation.resolve(user.get().getProfilePic());
+			
+			Resource resource = new UrlResource(imageFile.toUri());
+			
+			if(resource.exists() || (resource.isReadable()))
+			{
+				System.out.println(resource);
+				return resource;
+			}
+			else {
+	            throw new Exception("Couldn't read file: " + imageFile);
+	        }
+					
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;	 
+	}
+
 
 }

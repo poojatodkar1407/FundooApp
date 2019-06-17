@@ -2,6 +2,7 @@ package com.bridgelabz.fundoo.note.service;
 
 import java.util.List;
 
+import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
 import com.bridgelabz.fundoo.note.model.Note;
 import com.bridgelabz.fundoo.response.Response;
@@ -19,5 +20,12 @@ public interface NoteService {
 	public Response setColour(String token, long noteId, String color);
 	public List<Note> getPinnedNote(String token);
 	public List<Note> getArchievedNote(String token);
+	public Note findNoteFromUser(String title, String description);
+	public Response setReminder(String token, long noteId, String time);
+	public Response deleteReminder(String token, long noteId);
+	public Response addCollaboratorToNote(String token, long noteId, CollaboratorDTO collaboratordto);
+	//public Response deleteCollaboratorFromNote(String token, long noteId);
+	//Response addCollaboratorToNote(String token, String email, long noteId);
+	public Response deleteCollaboratorToNote(String token, long noteId, String emailId);
 	
 }

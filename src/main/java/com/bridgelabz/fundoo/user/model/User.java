@@ -2,6 +2,7 @@ package com.bridgelabz.fundoo.user.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -9,15 +10,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
-
 import com.bridgelabz.fundoo.note.model.Label;
 import com.bridgelabz.fundoo.note.model.Note;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table
@@ -45,6 +47,16 @@ public class User {
 	private String mobileNum;
 	private boolean isVerify;
 	private LocalDateTime registerDate = LocalDateTime.now();
+	private String profilePic;
+	
+
+	public String getProfilePic() {
+		return profilePic;
+	}
+
+	public void setProfilePic(String profilePic) {
+		this.profilePic = profilePic;
+	}
 
 	public Long getUserId() {
 		return userId;
@@ -117,6 +129,7 @@ public class User {
 				+ registerDate + "]";
 	}
 
+	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Note> notes;
 
@@ -128,6 +141,7 @@ public class User {
 		this.notes = notes;
 	}
 	
+	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<Label> label;
 
@@ -139,5 +153,16 @@ public class User {
 		this.label = label;
 	}
 	
+	@JsonIgnore
+	@ManyToMany(cascade = CascadeType.ALL)
+	private Set<Note> collaboratedNotes;
 
+	public Set<Note> getCollaboratedNotes() {
+		return collaboratedNotes;
+	}
+
+	public void setCollaboratedNotes(Set<Note> collaboratedNotes) {
+		this.collaboratedNotes = collaboratedNotes;
+	}
+	
 }

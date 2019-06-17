@@ -48,7 +48,6 @@ public class LabelServiceImpl implements LabelService {
 
 	public Response createLabel(LabelDTO labeldto, String token) {
 
-		System.out.println("in service");
 		long userId = userToken.decodeToken(token);
 		Optional<User> user = userRepository.findById(userId);
 

@@ -1,6 +1,7 @@
 package com.bridgelabz.fundoo.note.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,14 +13,19 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.bridgelabz.fundoo.exception.UserException;
+import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
+import com.bridgelabz.fundoo.note.model.Collaborator;
 import com.bridgelabz.fundoo.note.model.Note;
-import com.bridgelabz.fundoo.note.repository.*;
+import com.bridgelabz.fundoo.note.repository.CollaboratorRepository;
+import com.bridgelabz.fundoo.note.repository.NoteRepository;
 import com.bridgelabz.fundoo.response.Response;
+import com.bridgelabz.fundoo.user.model.EmailId;
 import com.bridgelabz.fundoo.user.model.User;
-import com.bridgelabz.fundoo.user.repository.*;
+import com.bridgelabz.fundoo.user.repository.UserRepository;
 import com.bridgelabz.fundoo.utility.ResponseHelper;
 import com.bridgelabz.fundoo.utility.TokenUtil;
+import com.bridgelabz.fundoo.utility.Utility;
 
 @Service("notesService")
 @PropertySource("classpath:message.properties")
@@ -36,6 +42,9 @@ public class NotesServiceImpl implements NoteService {
 
 	@Autowired
 	private NoteRepository noteRepository;
+
+	@Autowired
+	private CollaboratorRepository collaboratorRepository;
 
 	@Autowired
 	private Environment environment;
@@ -138,9 +147,7 @@ public class NotesServiceImpl implements NoteService {
 	public Response checkPinOrNot(String token, long noteId) {
 
 		long userId = userToken.decodeToken(token);
-		System.out.println(userId);
 		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
-		System.out.println("note is" + note);
 
 		if (note == null) {
 			throw new UserException(100, "note is not exist");
@@ -203,22 +210,16 @@ public class NotesServiceImpl implements NoteService {
 	}
 
 	/*
-	 * public List<Note> restoreTrashNotes(String token)
-	 * {
-	  		long userId = userToken.decodeToken(token);
-	  		List<Note> trashNote = noteRepository.findByUserId(userId);
-	  		List<Note> listTrashNote = new ArrayList<>();
-	  		
-	  		for(Note userNotes : trashNote)
-	  		{
-	  			Note noteDto = modelmapper.map(userNotes,Note.class);
-	  			if(userNotes.isTrash() == true)
-	  			{
-	  				listTrashNote.add(noteDto);
-	  			}
-	  			
-	  		}
-	 * }
+	 * public List<Note> restoreTrashNotes(String token) { long userId =
+	 * userToken.decodeToken(token); List<Note> trashNote =
+	 * noteRepository.findByUserId(userId); List<Note> listTrashNote = new
+	 * ArrayList<>();
+	 * 
+	 * for(Note userNotes : trashNote) { Note noteDto =
+	 * modelmapper.map(userNotes,Note.class); if(userNotes.isTrash() == true) {
+	 * listTrashNote.add(noteDto); }
+	 * 
+	 * } }
 	 */
 	@Override
 	public List<Note> restoreTrashNotes(String token) {
@@ -228,28 +229,26 @@ public class NotesServiceImpl implements NoteService {
 				.orElseThrow(() -> new UserException("Sorry ! Note are not available"));
 		List<Note> userNote = user.getNotes().stream().filter(data -> (data.isTrash() == true))
 				.collect(Collectors.toList());
-		
+
 		return userNote;
 
 	}
 
 	/*
-
-	 public List<Note> getPinnedNote(String token)
-	 {
-	 long userId = userToken.decode(token);
-	 User user = userRepository.fingById(userId).orElseThrow(()->new UserException("not available"));
-
-	 List<Note> pinNote = noteRepository.findByUserId(userId);
-	 List<Note> listPinNote = new ArrayList<>();
-	 
-	 for (Note userNotes : pinNote) {
-			Note notesDto = modelMapper.map(userNotes, Note.class);
-			if (userNotes.isArchive() == true) {
-				listNotes.add(notesDto);
-
-			}
-	 
+	 * 
+	 * public List<Note> getPinnedNote(String token) { long userId =
+	 * userToken.decode(token); User user =
+	 * userRepository.fingById(userId).orElseThrow(()->new
+	 * UserException("not available"));
+	 * 
+	 * List<Note> pinNote = noteRepository.findByUserId(userId); List<Note>
+	 * listPinNote = new ArrayList<>();
+	 * 
+	 * for (Note userNotes : pinNote) { Note notesDto = modelMapper.map(userNotes,
+	 * Note.class); if (userNotes.isArchive() == true) { listNotes.add(notesDto);
+	 * 
+	 * }
+	 * 
 	 */
 	@Override
 	public List<Note> getPinnedNote(String token) {
@@ -258,26 +257,22 @@ public class NotesServiceImpl implements NoteService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new UserException("No note is available"));
 		List<Note> pinNote = user.getNotes().stream().filter(data -> (data.isPin() == true))
 				.collect(Collectors.toList());
-		user.getNotes().stream().filter(data1 -> (data1.isPin() == true)).collect(Collectors.toList()).forEach(System.out::println);
-		
+		user.getNotes().stream().filter(data1 -> (data1.isPin() == true)).collect(Collectors.toList())
+				.forEach(System.out::println);
+
 		return pinNote;
 
 	}
+
 	/*
 	 * 
-	 * 	public List<Note> getArchivedNotes(String token) {
-		long id = userToken.decodeToken(token);
-		List<Note> notes = (List<Note>) notesRepository.findByUserId(id);
-		List<Note> listNotes = new ArrayList<>();
-		for (Note userNotes : notes) {
-			Note notesDto = modelMapper.map(userNotes, Note.class);
-			if (userNotes.isArchive() == true) {
-				listNotes.add(notesDto);
-
-			}
-		}
-		return listNotes;
-	}
+	 * public List<Note> getArchivedNotes(String token) { long id =
+	 * userToken.decodeToken(token); List<Note> notes = (List<Note>)
+	 * notesRepository.findByUserId(id); List<Note> listNotes = new ArrayList<>();
+	 * for (Note userNotes : notes) { Note notesDto = modelMapper.map(userNotes,
+	 * Note.class); if (userNotes.isArchive() == true) { listNotes.add(notesDto);
+	 * 
+	 * } } return listNotes; }
 	 */
 	@Override
 	public List<Note> getArchievedNote(String token) {
@@ -287,8 +282,168 @@ public class NotesServiceImpl implements NoteService {
 		List<Note> archieveNote = user.getNotes().stream().filter(data -> (data.isArchieve() == true))
 				.collect(Collectors.toList());
 
-		user.getNotes().stream().filter(data1 -> (data1.isArchieve() == true)).collect(Collectors.toList()).forEach(System.out::println);
+		user.getNotes().stream().filter(data1 -> (data1.isArchieve() == true)).collect(Collectors.toList())
+				.forEach(System.out::println);
 		return archieveNote;
 
 	}
+
+	@Override
+	public Note findNoteFromUser(String title, String description) {
+
+		Note note = noteRepository.findByTitleAndDescription(title, description);
+		System.out.println(note);
+		if (note == null) {
+			throw new UserException(-6, "note is not available");
+		}
+
+		return note;
+	}
+
+	@Override
+	public Response setReminder(String token, long noteId, String time) {
+		long userId = userToken.decodeToken(token);
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+
+		if (note == null) {
+			throw new UserException(-5, "invalid note");
+		}
+
+		System.out.println("time is" + time);
+		DateTimeFormatter datetimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		LocalDateTime localDateTime = LocalDateTime.parse(time, datetimeFormatter);
+		System.out.println(localDateTime);
+		LocalDateTime CurrentDateAndTime = LocalDateTime.now();
+		System.out.println(CurrentDateAndTime);
+		if (CurrentDateAndTime.compareTo(localDateTime) < 0) {
+			note.setRemainder(localDateTime);
+			noteRepository.save(note);
+			Response response = ResponseHelper.statusResponse(100, environment.getProperty("note.status.remainder"));
+			return response;
+		}
+
+		Response response = ResponseHelper.statusResponse(101, environment.getProperty("note.status.remainderfail"));
+
+		return response;
+	}
+
+	@Override
+	public Response deleteReminder(String token, long noteId) {
+		long userId = userToken.decodeToken(token);
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+		if (note == null) {
+			throw new UserException(-5, "note invalid");
+		}
+
+		note.setRemainder(null);
+		noteRepository.save(note);
+
+		Response response = ResponseHelper.statusResponse(100, environment.getProperty("note.status.deleteRemainder"));
+
+		return response;
+
+	}
+
+	@Override
+	public Response addCollaboratorToNote(String token, long noteId, CollaboratorDTO collaboratordto) {
+		EmailId emailId = new EmailId();
+		long userId = userToken.decodeToken(token);
+
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+
+		if (note == null) {
+			throw new UserException(-5, "note invalid");
+		}
+		Optional<Collaborator> userCollaborator = collaboratorRepository.findByEmailId(collaboratordto.getEmailId());
+
+		if (userCollaborator.isPresent()) {
+			throw new UserException(-5, "collaborator already present");
+		}
+
+		Collaborator collaborator = modelMapper.map(collaboratordto, Collaborator.class);
+		Optional<User> mainUser = userRepository.findById(userId);
+		Optional<User> collaborateUser = userRepository.findByEmailId(collaboratordto.getEmailId());
+		collaborator.setEmailId(collaboratordto.getEmailId());
+		collaborator.setNoteId(noteId);
+		collaborator.setUserId(userId);
+		collaborator.setCreatedAt(LocalDateTime.now());
+
+		collaborateUser.get().getCollaboratedNotes().add(note);
+		note.getCollaboratedUser().add(collaborateUser.get());
+
+		collaboratorRepository.save(collaborator);
+		noteRepository.save(note);
+
+		emailId.setFrom("poojasparkle124@gmail.com");
+		emailId.setTo(collaboratordto.getEmailId());
+		emailId.setSubject("Note collaborate to user");
+		emailId.setBody("note collaboration from" + mainUser.get().getEmailId() + "to collaborating to"
+				+ collaboratordto.getEmailId() + " for following note : title" + note.getTitle() + "and Description is"
+				+ note.getDescription());
+
+		Utility.sendEmail(emailId);
+
+		Response response = ResponseHelper.statusResponse(100, environment.getProperty("collaborator.status.create"));
+
+		return response;
+
+	}
+
+	@Override
+	public Response deleteCollaboratorToNote(String token, long noteId, String emailId) {
+		long userId = userToken.decodeToken(token);
+		Optional<User> user = userRepository.findByEmailId(emailId);
+
+		if (!user.isPresent()) {
+			throw new UserException(-5, "user is not exist");
+		}
+
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+		if (note == null) {
+			throw new UserException(-5, "note is not exist");
+		}
+
+		Optional<Collaborator> collaborator = collaboratorRepository.findByEmailId(emailId);
+		if (collaborator == null) {
+			throw new UserException(-5, "collaborator is not exist");
+		}
+
+		user.get().getCollaboratedNotes().remove(note);
+		note.getCollaboratedUser().remove(user.get());
+
+		collaboratorRepository.delete(collaborator.get());
+		userRepository.save(user.get());
+		noteRepository.save(note);
+
+		Response response = ResponseHelper.statusResponse(100, environment.getProperty("status.collaborator.deleted"));
+		return response;
+	}
+
+	/*
+	 * public Response removeCollaborator(String token, String email, long noteId) {
+	 * 
+	 * long userId = userToken.decodeToken(token);// Optional<User> user =
+	 * userRepository.findByEmailId(email);
+	 * 
+	 * if (!user.isPresent()) throw new UserException(-4, "No user exist");
+	 * 
+	 * Note note = notesRepository.findByIdAndUserId(noteId, userId);
+	 * 
+	 * if (note == null) throw new UserException(-5, "No note exist");
+	 * 
+	 * user.get().getCollaboratedNotes().remove(note);
+	 * note.getCollaboratedUser().remove(user.get());
+	 * 
+	 * userRepository.save(user.get()); notesRepository.save(note);
+	 * 
+	 * // Response response =
+	 * StatusHelper.statusInfo(environment.getProperty("status.collab.remove"),
+	 * Integer.parseInt(environment.getProperty("status.success.code"))); // return
+	 * response;
+	 * 
+	 * Response response = ResponseHelper.statusResponse(100,
+	 * environment.getProperty("status.note.trashError")); // return response;
+	 * return response; }
+	 * 
+	 */
 }

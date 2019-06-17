@@ -3,6 +3,7 @@ package com.bridgelabz.fundoo.note.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -14,6 +15,9 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.stereotype.Component;
+
+import com.bridgelabz.fundoo.user.model.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Component
 @Entity
@@ -35,6 +39,16 @@ public class Note implements Serializable {
 	private LocalDateTime modified;
 	private boolean isPin;
 	private boolean isArchieve;
+	private LocalDateTime remainder;
+
+	public LocalDateTime getRemainder() {
+		return remainder;
+	}
+
+	public void setRemainder(LocalDateTime remainder) {
+		this.remainder = remainder;
+	}
+
 	public boolean isArchieve() {
 		return isArchieve;
 	}
@@ -52,8 +66,6 @@ public class Note implements Serializable {
 	}
 
 	private boolean isTrash;
-	
-	
 
 	public boolean isTrash() {
 		return isTrash;
@@ -124,8 +136,11 @@ public class Note implements Serializable {
 		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
 				+ ", colour=" + colour + ", created=" + created + ", modified=" + modified + "]";
 	}
+
+	@JsonIgnore
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Label> listLabel;
+
 	public List<Label> getListLabel() {
 		return listLabel;
 	}
@@ -133,6 +148,17 @@ public class Note implements Serializable {
 	public void setListLabel(List<Label> listLabel) {
 		this.listLabel = listLabel;
 	}
-	
+
+	@JsonIgnore
+	@ManyToMany(cascade = CascadeType.ALL)
+	private Set<User>collaboratedUser;
+
+	public Set<User> getCollaboratedUser() {
+		return collaboratedUser;
+	}
+
+	public void setCollaboratedUser(Set<User> collaboratedUser) {
+		this.collaboratedUser = collaboratedUser;
+	}
 
 }
