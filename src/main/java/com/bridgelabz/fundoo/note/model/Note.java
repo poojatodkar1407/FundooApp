@@ -40,6 +40,15 @@ public class Note implements Serializable {
 	private boolean isPin;
 	private boolean isArchieve;
 	private LocalDateTime remainder;
+	private String noteImage;
+
+	public String getNoteImage() {
+		return noteImage;
+	}
+
+	public void setNoteImage(String noteImage) {
+		this.noteImage = noteImage;
+	}
 
 	public LocalDateTime getRemainder() {
 		return remainder;

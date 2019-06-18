@@ -70,11 +70,9 @@ public class UserServiceImpl implements UserService {
 		String password = passwordEncoder.encode(userDto.getPassword());
 
 		user.setPassword(password);
-		user = userRepo.save(user);
-		Long userId = user.getUserId();
-		System.out.println(emailid + " " + userId);
+		userRepo.save(user);
+		Long userId = user.getUserId();		
 		Utility.send(emailid, "confirmation mail", Utility.getUrl(userId) + "/valid");
-
 		statusResponse = ResponseHelper.statusResponse(200, "register successfully");
 		return statusResponse;
 
@@ -89,8 +87,6 @@ public class UserServiceImpl implements UserService {
 			return authentication(user, loginDto.getPassword());
 
 		}
-
-		System.out.println("response is " + response);
 		return response;
 
 	}

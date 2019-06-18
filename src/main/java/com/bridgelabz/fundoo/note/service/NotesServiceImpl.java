@@ -1,9 +1,13 @@
 package com.bridgelabz.fundoo.note.service;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -11,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.exception.UserException;
 import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
@@ -49,6 +54,9 @@ public class NotesServiceImpl implements NoteService {
 	@Autowired
 	private Environment environment;
 
+	private final java.nio.file.Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
+
+	
 	@Override
 	public Response createNote(NoteDTO noteDto, String token) {
 
@@ -407,7 +415,7 @@ public class NotesServiceImpl implements NoteService {
 		if (collaborator == null) {
 			throw new UserException(-5, "collaborator is not exist");
 		}
-
+		
 		user.get().getCollaboratedNotes().remove(note);
 		note.getCollaboratedUser().remove(user.get());
 
@@ -446,4 +454,40 @@ public class NotesServiceImpl implements NoteService {
 	 * return response; }
 	 * 
 	 */
+	
+	@Override
+	public Response uploadImageToNote(String token , long noteId, MultipartFile imageFile)
+	{
+		long userId = userToken.decodeToken(token);
+		
+		Optional<User> user = userRepository.findById(userId);
+		
+		if(!user.isPresent())
+		{
+			throw new UserException(-5,"user is not exist");
+		}
+		
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+		
+		if(note == null)
+		{
+			throw new UserException(-5, "note is not available");
+		}
+		
+		UUID randomUuid = UUID.randomUUID();
+		
+		String uniqueId = randomUuid.toString();
+		try
+		{
+			Files.copy(imageFile.getInputStream(), fileLocation.resolve(uniqueId), StandardCopyOption.REPLACE_EXISTING);
+			note.setNoteImage(uniqueId);
+			noteRepository.save(note);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		return ResponseHelper.statusResponse(200, "note picture is uploaded");		
+	}
 }
