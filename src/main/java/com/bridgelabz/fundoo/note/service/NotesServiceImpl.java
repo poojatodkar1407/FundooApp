@@ -1,6 +1,7 @@
 package com.bridgelabz.fundoo.note.service;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -54,7 +55,7 @@ public class NotesServiceImpl implements NoteService {
 	@Autowired
 	private Environment environment;
 
-	private final java.nio.file.Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
+	private final Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
 
 	
 	@Override
@@ -371,6 +372,7 @@ public class NotesServiceImpl implements NoteService {
 		Collaborator collaborator = modelMapper.map(collaboratordto, Collaborator.class);
 		Optional<User> mainUser = userRepository.findById(userId);
 		Optional<User> collaborateUser = userRepository.findByEmailId(collaboratordto.getEmailId());
+		System.out.println(collaborateUser);
 		collaborator.setEmailId(collaboratordto.getEmailId());
 		collaborator.setNoteId(noteId);
 		collaborator.setUserId(userId);
