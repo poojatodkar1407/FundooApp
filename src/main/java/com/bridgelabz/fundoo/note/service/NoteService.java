@@ -3,7 +3,6 @@ package com.bridgelabz.fundoo.note.service;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
 import com.bridgelabz.fundoo.note.model.Note;
 import com.bridgelabz.fundoo.response.Response;
@@ -24,10 +23,10 @@ public interface NoteService {
 	public Note findNoteFromUser(String title, String description);
 	public Response setReminder(String token, long noteId, String time);
 	public Response deleteReminder(String token, long noteId);
-	public Response addCollaboratorToNote(String token, long noteId, CollaboratorDTO collaboratordto);
 	//public Response deleteCollaboratorFromNote(String token, long noteId);
 	//Response addCollaboratorToNote(String token, String email, long noteId);
 	public Response deleteCollaboratorToNote(String token, long noteId, String emailId);
-	Response uploadImageToNote(String token, long noteId, MultipartFile imageFile);
+	public Response uploadImageToNote(String token, long noteId, MultipartFile imageFile);
+	public Response addCollaborator(String token, String email, long noteId);
 	
 }

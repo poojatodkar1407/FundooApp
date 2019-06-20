@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.bridgelabz.fundoo.exception.UserException;
 import com.bridgelabz.fundoo.note.dto.LabelDTO;
@@ -26,6 +28,7 @@ import com.bridgelabz.fundoo.utility.TokenUtil;
 
 @Service("LableService")
 @PropertySource("classpath:message.properties")
+@Transactional(propagation = Propagation.SUPPORTS,readOnly = false)
 public class LabelServiceImpl implements LabelService {
 
 	@Autowired

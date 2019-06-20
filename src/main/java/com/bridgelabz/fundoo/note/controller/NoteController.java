@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
 import com.bridgelabz.fundoo.note.model.Note;
 import com.bridgelabz.fundoo.note.service.NoteService;
@@ -134,9 +133,9 @@ public class NoteController {
 	}
 	
 	@PutMapping("/addCollaborator")
-	public ResponseEntity<Response> addCollaborator(@RequestHeader String token, @RequestParam long noteId , @RequestBody CollaboratorDTO collaboratordto)
+	public ResponseEntity<Response> addCollaborator(@RequestHeader String token, @RequestParam long noteId , @RequestParam String emailId)
 	{
-		Response response = noteService.addCollaboratorToNote(token, noteId, collaboratordto);
+		Response response = noteService.addCollaborator(token,emailId, noteId);
 		return new ResponseEntity<Response>(response,HttpStatus.OK);		
 	}
 	

@@ -1,5 +1,6 @@
 package com.bridgelabz.fundoo.user.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -24,8 +25,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table
 @Component
-public class User {
+public class User implements Serializable {
 
+	private static final long serialVersionUID = -7123615129393872732L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "userId")

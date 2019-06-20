@@ -17,6 +17,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.exception.UserException;
@@ -32,9 +34,8 @@ import com.bridgelabz.fundoo.utility.Utility;
 
 @PropertySource("classpath:message.properties")
 @Service("userService")
+@Transactional(propagation = Propagation.SUPPORTS,readOnly = false)
 public class UserServiceImpl implements UserService {
-
-	private static String UPLOAD_FOLDER = "/home/admin1/Pictures/Wallpapers/";
 
 	@Autowired
 	private UserRepository userRepo;
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private Environment environment;
 
-	private final java.nio.file.Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
+	private final Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
 	
 	@Override
 	public Response onRegister(UserDTO userDto) {

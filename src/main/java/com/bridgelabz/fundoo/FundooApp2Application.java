@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.multipart.MultipartException;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 
 
 @Configuration
@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartException;
 @ComponentScan
 @SpringBootApplication
 @EnableScheduling
+@EnableTransactionManagement
 public class FundooApp2Application {
 
 	public static void main(String[] args) {

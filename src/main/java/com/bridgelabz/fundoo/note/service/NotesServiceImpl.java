@@ -16,14 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.exception.UserException;
-import com.bridgelabz.fundoo.note.dto.CollaboratorDTO;
 import com.bridgelabz.fundoo.note.dto.NoteDTO;
-import com.bridgelabz.fundoo.note.model.Collaborator;
 import com.bridgelabz.fundoo.note.model.Note;
-import com.bridgelabz.fundoo.note.repository.CollaboratorRepository;
 import com.bridgelabz.fundoo.note.repository.NoteRepository;
 import com.bridgelabz.fundoo.response.Response;
 import com.bridgelabz.fundoo.user.model.EmailId;
@@ -35,6 +34,7 @@ import com.bridgelabz.fundoo.utility.Utility;
 
 @Service("notesService")
 @PropertySource("classpath:message.properties")
+@Transactional(propagation = Propagation.SUPPORTS, readOnly = false)
 public class NotesServiceImpl implements NoteService {
 
 	@Autowired
@@ -50,14 +50,10 @@ public class NotesServiceImpl implements NoteService {
 	private NoteRepository noteRepository;
 
 	@Autowired
-	private CollaboratorRepository collaboratorRepository;
-
-	@Autowired
 	private Environment environment;
 
 	private final Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
 
-	
 	@Override
 	public Response createNote(NoteDTO noteDto, String token) {
 
@@ -354,142 +350,93 @@ public class NotesServiceImpl implements NoteService {
 	}
 
 	@Override
-	public Response addCollaboratorToNote(String token, long noteId, CollaboratorDTO collaboratordto) {
-		EmailId emailId = new EmailId();
+	public Response addCollaborator(String token, String email, long noteId) {
+		EmailId collabEmail = new EmailId();
 		long userId = userToken.decodeToken(token);
+
+		Optional<User> MainUser = userRepository.findById(userId);
+		Optional<User> user = userRepository.findByEmailId(email);
+
+		if (!user.isPresent())
+			throw new UserException(-4, "No user exist");
 
 		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
 
-		if (note == null) {
-			throw new UserException(-5, "note invalid");
-		}
-		Optional<Collaborator> userCollaborator = collaboratorRepository.findByEmailId(collaboratordto.getEmailId());
+		if (note == null)
+			throw new UserException(-5, "No note exist");
 
-		if (userCollaborator.isPresent()) {
-			throw new UserException(-5, "collaborator already present");
-		}
+		if (user.get().getCollaboratedNotes().contains(note))
+			throw new UserException(-5, "Note is already collaborated");
 
-		Collaborator collaborator = modelMapper.map(collaboratordto, Collaborator.class);
-		Optional<User> mainUser = userRepository.findById(userId);
-		Optional<User> collaborateUser = userRepository.findByEmailId(collaboratordto.getEmailId());
-		System.out.println(collaborateUser);
-		collaborator.setEmailId(collaboratordto.getEmailId());
-		collaborator.setNoteId(noteId);
-		collaborator.setUserId(userId);
-		collaborator.setCreatedAt(LocalDateTime.now());
+		user.get().getCollaboratedNotes().add(note);
+		note.getCollaboratedUser().add(user.get());
 
-		collaborateUser.get().getCollaboratedNotes().add(note);
-		note.getCollaboratedUser().add(collaborateUser.get());
-
-		collaboratorRepository.save(collaborator);
+		userRepository.save(user.get());
 		noteRepository.save(note);
 
-		emailId.setFrom("poojasparkle124@gmail.com");
-		emailId.setTo(collaboratordto.getEmailId());
-		emailId.setSubject("Note collaborate to user");
-		emailId.setBody("note collaboration from" + mainUser.get().getEmailId() + "to collaborating to"
-				+ collaboratordto.getEmailId() + " for following note : title" + note.getTitle() + "and Description is"
-				+ note.getDescription());
-
-		Utility.sendEmail(emailId);
-
-		Response response = ResponseHelper.statusResponse(100, environment.getProperty("collaborator.status.create"));
-
+		collabEmail.setFrom("poojasparkle124@gmail.com");
+		collabEmail.setTo(email);
+		collabEmail.setSubject("Note collaboration ");
+		collabEmail.setBody("Note from " + MainUser.get().getEmailId() + " collaborated to you\nTitle : " + note.getTitle()
+				+ "\nDescription : " + note.getDescription());
+		Utility.sendEmail(collabEmail);
+		Response response = ResponseHelper.statusResponse(200, environment.getProperty("status.collab.success"));
 		return response;
 
 	}
 
 	@Override
 	public Response deleteCollaboratorToNote(String token, long noteId, String emailId) {
+
 		long userId = userToken.decodeToken(token);
 		Optional<User> user = userRepository.findByEmailId(emailId);
+
+		if (!user.isPresent())
+			throw new UserException(-4, "No user exist");
+
+		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+
+		if (note == null)
+			throw new UserException(-5, "No note exist");
+
+		user.get().getCollaboratedNotes().remove(note);
+		note.getCollaboratedUser().remove(user.get());
+
+		userRepository.save(user.get());
+		noteRepository.save(note);
+
+		Response response = ResponseHelper.statusResponse(100, environment.getProperty("status.note.trashError"));
+		return response;
+	}
+
+	@Override
+	public Response uploadImageToNote(String token, long noteId, MultipartFile imageFile) {
+		long userId = userToken.decodeToken(token);
+
+		Optional<User> user = userRepository.findById(userId);
 
 		if (!user.isPresent()) {
 			throw new UserException(-5, "user is not exist");
 		}
 
 		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
+
 		if (note == null) {
-			throw new UserException(-5, "note is not exist");
-		}
-
-		Optional<Collaborator> collaborator = collaboratorRepository.findByEmailId(emailId);
-		if (collaborator == null) {
-			throw new UserException(-5, "collaborator is not exist");
-		}
-		
-		user.get().getCollaboratedNotes().remove(note);
-		note.getCollaboratedUser().remove(user.get());
-
-		collaboratorRepository.delete(collaborator.get());
-		userRepository.save(user.get());
-		noteRepository.save(note);
-
-		Response response = ResponseHelper.statusResponse(100, environment.getProperty("status.collaborator.deleted"));
-		return response;
-	}
-
-	/*
-	 * public Response removeCollaborator(String token, String email, long noteId) {
-	 * 
-	 * long userId = userToken.decodeToken(token);// Optional<User> user =
-	 * userRepository.findByEmailId(email);
-	 * 
-	 * if (!user.isPresent()) throw new UserException(-4, "No user exist");
-	 * 
-	 * Note note = notesRepository.findByIdAndUserId(noteId, userId);
-	 * 
-	 * if (note == null) throw new UserException(-5, "No note exist");
-	 * 
-	 * user.get().getCollaboratedNotes().remove(note);
-	 * note.getCollaboratedUser().remove(user.get());
-	 * 
-	 * userRepository.save(user.get()); notesRepository.save(note);
-	 * 
-	 * // Response response =
-	 * StatusHelper.statusInfo(environment.getProperty("status.collab.remove"),
-	 * Integer.parseInt(environment.getProperty("status.success.code"))); // return
-	 * response;
-	 * 
-	 * Response response = ResponseHelper.statusResponse(100,
-	 * environment.getProperty("status.note.trashError")); // return response;
-	 * return response; }
-	 * 
-	 */
-	
-	@Override
-	public Response uploadImageToNote(String token , long noteId, MultipartFile imageFile)
-	{
-		long userId = userToken.decodeToken(token);
-		
-		Optional<User> user = userRepository.findById(userId);
-		
-		if(!user.isPresent())
-		{
-			throw new UserException(-5,"user is not exist");
-		}
-		
-		Note note = noteRepository.findByUserIdAndNoteId(userId, noteId);
-		
-		if(note == null)
-		{
 			throw new UserException(-5, "note is not available");
 		}
-		
+
 		UUID randomUuid = UUID.randomUUID();
-		
+
 		String uniqueId = randomUuid.toString();
-		try
-		{
+		try {
 			Files.copy(imageFile.getInputStream(), fileLocation.resolve(uniqueId), StandardCopyOption.REPLACE_EXISTING);
 			note.setNoteImage(uniqueId);
 			noteRepository.save(note);
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		return ResponseHelper.statusResponse(200, "note picture is uploaded");		
+
+		return ResponseHelper.statusResponse(200, "note picture is uploaded");
 	}
+
 }
