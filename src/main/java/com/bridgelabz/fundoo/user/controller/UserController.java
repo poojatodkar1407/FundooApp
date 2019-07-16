@@ -24,7 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.bridgelabz.fundoo.exception.UserException;
 import com.bridgelabz.fundoo.response.Response;
 import com.bridgelabz.fundoo.response.ResponseToken;
+import com.bridgelabz.fundoo.user.dto.EmailDto;
 import com.bridgelabz.fundoo.user.dto.LoginDTO;
+import com.bridgelabz.fundoo.user.dto.PasswordDto;
 import com.bridgelabz.fundoo.user.dto.UserDTO;
 import com.bridgelabz.fundoo.user.service.UserService;
 
@@ -38,7 +40,7 @@ public class UserController {
 	@PostMapping("/register")
 	public ResponseEntity<Response> register(@RequestBody UserDTO userDto)
 			throws UserException, UnsupportedEncodingException {
-
+System.out.println("in user controller"+userDto);
 		Response response = userService.onRegister(userDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 
@@ -47,7 +49,7 @@ public class UserController {
 	@PostMapping("/login")
 	public ResponseEntity<ResponseToken> onLogin(@RequestBody LoginDTO loginDTO)
 			throws UserException, UnsupportedEncodingException {
-
+		System.out.println("in login controller");
 		ResponseToken response = userService.onLogin(loginDTO);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -59,19 +61,19 @@ public class UserController {
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
-	@GetMapping("/forgotpassword")
-	public ResponseEntity<Response> forgotPassword(@RequestParam String emailId)
+	@PostMapping("/forgotpassword")
+	public ResponseEntity<Response> forgotPassword(@RequestBody EmailDto emailDto)
 			throws UnsupportedEncodingException, UserException, MessagingException {
 		
-		Response status = userService.forgetPassword(emailId);
+		Response status = userService.forgetPassword(emailDto);
 		return new ResponseEntity<Response>(status, HttpStatus.OK);
 
 	}
 
 	@PutMapping(value = "/resetpassword/{token}")
-	public ResponseEntity<Response> resetPassword(@RequestParam String token, @RequestParam("password") String password)
+	public ResponseEntity<Response> resetPassword(@PathVariable String token, @RequestBody PasswordDto passwordDto)
 			throws UserException {
-		Response response = userService.resetPaswords(token, password);
+		Response response = userService.resetPasswords(token, passwordDto);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
 	}

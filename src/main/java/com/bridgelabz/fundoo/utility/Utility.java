@@ -72,6 +72,13 @@ public class Utility {
 
 		return "http://localhost:8080/user/" + tokenUtil.createToken(id);
 	}
+	
+	public static String getUrl1(Long id)
+	{
+		TokenUtil tokenUtil = new TokenUtil();
+
+		return "http://localhost:4200/reset/" + tokenUtil.createToken(id);
+	}
 
 	public static String getUrlForCollaborator(Long id) {
 

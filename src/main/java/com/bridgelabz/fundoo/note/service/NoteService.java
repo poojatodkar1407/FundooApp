@@ -28,5 +28,8 @@ public interface NoteService {
 	public Response deleteCollaboratorToNote(String token, long noteId, String emailId);
 	public Response uploadImageToNote(String token, long noteId, MultipartFile imageFile);
 	public Response addCollaborator(String token, String email, long noteId);
+	List<Note> getAllNote(String token);
+	List<Note> getUnpinnedNote(String token);
+	Response restoreMainNote(String token,long noteId);
 	
 }

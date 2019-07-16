@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,7 @@ public class LabelServiceImpl implements LabelService {
 		label.setModified(LocalDateTime.now());
 		labelRepository.save(label);
 
-		Response response = ResponseHelper.statusResponse(300, enviornment.getProperty("status.label.updated"));
+		Response response = ResponseHelper.statusResponse(100, enviornment.getProperty("status.label.updated"));
 		return response;
 
 	}
@@ -126,7 +127,7 @@ public class LabelServiceImpl implements LabelService {
 		}
 		labelRepository.delete(label);
 
-		Response response = ResponseHelper.statusResponse(400, enviornment.getProperty("status.label.deleted"));
+		Response response = ResponseHelper.statusResponse(100, enviornment.getProperty("status.label.deleted"));
 		return response;
 	}
 
@@ -138,6 +139,11 @@ public class LabelServiceImpl implements LabelService {
 		}
 
 		List<Label> labels = labelRepository.findByUserId(userId);
+//		List<Label> labelList = labelRepository.findAllById(userId);
+//		for(Label labels1 : labelList)
+//		{
+//			System.out.println(labels1);
+//		}
 		List<Label> listLabel = new ArrayList<>();
 		for (Label noteLabel : labels) {
 			Label labelDto = modelMapper.map(noteLabel, Label.class);
@@ -170,9 +176,9 @@ public class LabelServiceImpl implements LabelService {
 		label.getNotes().add(note);
 		label.setModified(LocalDateTime.now());
 		noteRepository.save(note);
-		labelRepository.save(label);
+		//labelRepository.save(label);
 
-		Response response = ResponseHelper.statusResponse(100, enviornment.getProperty("status.label.addtonote"));
+		Response response = ResponseHelper.statusResponse(200, enviornment.getProperty("status.label.addtonote"));
 		return response;
 	}
 
@@ -187,10 +193,12 @@ public class LabelServiceImpl implements LabelService {
 			throw new UserException(-6, "Note does not exist");
 		}
 		List<Label> label = note.get().getListLabel();
+		System.out.println(label.toString());
 		List<LabelDTO> listLabel = new ArrayList<>();
 		for (Label noteLabel : label) {
 			LabelDTO labelDto = modelMapper.map(noteLabel, LabelDTO.class);
 			listLabel.add(labelDto);
+			System.out.println(labelDto.getLabelName());
 		}
 		return listLabel;
 

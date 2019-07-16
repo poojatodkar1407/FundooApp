@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.bridgelabz.fundoo.exception.UserException;
 import com.bridgelabz.fundoo.response.Response;
 import com.bridgelabz.fundoo.response.ResponseToken;
+import com.bridgelabz.fundoo.user.dto.EmailDto;
 import com.bridgelabz.fundoo.user.dto.LoginDTO;
+import com.bridgelabz.fundoo.user.dto.PasswordDto;
 import com.bridgelabz.fundoo.user.dto.UserDTO;
 import com.bridgelabz.fundoo.user.model.User;
 
@@ -26,9 +28,9 @@ public interface UserService {
 
 	Response validateEmailId(String token);
 
-	Response resetPaswords(String token, String password);
+	Response resetPasswords(String token, PasswordDto passwordDto);
 
-	Response forgetPassword(String emailId) throws UserException, UnsupportedEncodingException;
+	Response forgetPassword(EmailDto emailDto) throws UserException, UnsupportedEncodingException;
 
 	Response uploadImage(String token, MultipartFile imageFile) throws IOException;
 

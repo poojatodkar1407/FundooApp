@@ -95,10 +95,29 @@ public class NoteController {
 		return listnotes;
 	}
 	
+	@PutMapping("/getTrashNote")
+	public ResponseEntity<Response> restoreMainNote(@RequestHeader String token , @RequestParam long noteId)
+	{
+		Response response = noteService.restoreMainNote(token, noteId);
+		return new ResponseEntity<Response>(response,HttpStatus.OK);
+	}
+	
 
 	@GetMapping("/getPin")
 	public List<Note> getPinnedNotes(@RequestHeader String token) {
 		List<Note> listnotes = noteService.getPinnedNote(token);
+		return listnotes;
+	}
+	
+	@GetMapping("/getUnPinAndUnArchive")
+	public List<Note> getUnPinnedNotes(@RequestHeader String token) {
+		List<Note> listnotes = noteService.getUnpinnedNote(token);
+		return listnotes;
+	}
+	
+	@GetMapping("/getAllNotes")
+	public List<Note> getAllNotes(@RequestHeader String token) {
+		List<Note> listnotes = noteService.getAllNote(token);
 		return listnotes;
 	}
 	

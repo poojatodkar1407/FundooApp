@@ -32,20 +32,20 @@ public class User implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "userId")
 	private Long userId;
-	@NotNull
-	@NotEmpty(message = "firstname should not be empty")
+//	@NotNull
+//	@NotEmpty(message = "firstname should not be empty")
 	private String firstName;
-	@NotNull
-	@NotEmpty(message = "lastname should not be empty")
+//	@NotNull
+//	@NotEmpty(message = "lastname should not be empty")
 	private String lastName;
-	@NotNull
-	@NotEmpty(message = "email id should not be empty")
+//	@NotNull
+//	@NotEmpty(message = "email id should not be empty")
 	private String emailId;
-	@NotNull
-	@NotEmpty(message = "password should not be empty")
+//	@NotNull
+//	@NotEmpty(message = "password should not be empty")
 	private String password;
-	@NotNull
-	@NotEmpty(message = "mobile number should not be empty")
+//	@NotNull
+//	@NotEmpty(message = "mobile number should not be empty")
 	private String mobileNum;
 	private boolean isVerify;
 	private LocalDateTime registerDate = LocalDateTime.now();
