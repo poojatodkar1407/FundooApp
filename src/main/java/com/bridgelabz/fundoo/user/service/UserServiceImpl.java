@@ -41,6 +41,9 @@ import com.bridgelabz.fundoo.utility.Utility;
 public class UserServiceImpl implements UserService {
 
 	@Autowired
+	private RabbitMqProvider rabbitMqProvider;
+	
+	@Autowired
 	private UserRepository userRepo;
 
 	@Autowired
@@ -62,7 +65,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Response onRegister(UserDTO userDto) {
-
+		EmailId emailId = new EmailId();
 		String emailid = userDto.getEmailId();
 
 		User user = modelMapper.map(userDto, User.class);
@@ -76,7 +79,13 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(password);
 		userRepo.save(user);
 		Long userId = user.getUserId();
-		Utility.send(emailid, "confirmation mail", Utility.getUrl(userId) + "/valid");
+//		Utility.send(emailid, "confirmation mail", Utility.getUrl(userId) + "/valid");
+		String url = Utility.getUrl(userId)+"/valid";
+		emailId.setTo(emailid);
+		emailId.setSubject("confirmation mail for registration");
+		emailId.setBody(url);
+		rabbitMqProvider.sendMessageToQueue(emailId);
+		rabbitMqProvider.send(emailId);
 		statusResponse = ResponseHelper.statusResponse(200, "register successfully");
 		return statusResponse;
 
