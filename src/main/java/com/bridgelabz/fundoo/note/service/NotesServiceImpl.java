@@ -13,8 +13,10 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,12 @@ public class NotesServiceImpl implements NoteService {
 	@Autowired
 	private NoteRepository noteRepository;
 
+	@Autowired
+	private RedisTemplate<String,Object> redisTemplate;
+	
+	@Value("${Key}")
+	private String key;
+	
 	@Autowired
 	private Environment environment;
 
@@ -516,5 +524,12 @@ public class NotesServiceImpl implements NoteService {
 
 		return ResponseHelper.statusResponse(200, "note picture is uploaded");
 	}
+	
+	@Override
+	public String getToken(String emailId)
+	{
+		return (String) redisTemplate.opsForHash().get(key, emailId);
+	}
+	
 
 }

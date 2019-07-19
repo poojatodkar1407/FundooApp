@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoo.exception.UserException;
+import com.bridgelabz.fundoo.note.service.NoteService;
 import com.bridgelabz.fundoo.response.Response;
 import com.bridgelabz.fundoo.response.ResponseToken;
 import com.bridgelabz.fundoo.user.dto.EmailDto;
@@ -35,7 +36,10 @@ import com.bridgelabz.fundoo.user.service.UserService;
 @RestController
 public class UserController {
 	@Autowired
-	UserService userService;
+	private UserService userService;
+	
+	@Autowired
+	private NoteService noteService;
 
 	@PostMapping("/register")
 	public ResponseEntity<Response> register(@RequestBody UserDTO userDto)
@@ -49,6 +53,7 @@ System.out.println("in user controller"+userDto);
 	@PostMapping("/login")
 	public ResponseEntity<ResponseToken> onLogin(@RequestBody LoginDTO loginDTO)
 			throws UserException, UnsupportedEncodingException {
+		
 		System.out.println("in login controller");
 		ResponseToken response = userService.onLogin(loginDTO);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -56,7 +61,7 @@ System.out.println("in user controller"+userDto);
 
 	@GetMapping(value = "/{token}/valid")
 	public ResponseEntity<Response> emailValidation(@PathVariable String token) throws UserException {
-
+		
 		Response response = userService.validateEmailId(token);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}

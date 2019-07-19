@@ -11,10 +11,12 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -40,6 +42,9 @@ import com.bridgelabz.fundoo.utility.Utility;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = false)
 public class UserServiceImpl implements UserService {
 
+	
+	@Autowired
+	private RedisTemplate<String,Object> redisTemplate;
 	@Autowired
 	private RabbitMqProvider rabbitMqProvider;
 	
@@ -61,6 +66,8 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private Environment environment;
 
+	@Value("${Key}")
+	private String key;
 	private final Path fileLocation = Paths.get("/home/admin1/Pictures/Wallpapers/");
 
 	@Override
@@ -119,6 +126,7 @@ public class UserServiceImpl implements UserService {
 				response.setToken(token);
 				response.setStatusCode(200);
 				response.setStatusMessage(environment.getProperty("user.login"));
+				redisTemplate.opsForHash().put(key,user.get().getEmailId(),token);
 				return response;
 			}
 

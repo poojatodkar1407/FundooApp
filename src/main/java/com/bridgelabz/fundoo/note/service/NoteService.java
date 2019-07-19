@@ -31,5 +31,6 @@ public interface NoteService {
 	List<Note> getAllNote(String token);
 	List<Note> getUnpinnedNote(String token);
 	Response restoreMainNote(String token,long noteId);
+	String getToken(String emailId);
 	
 }
